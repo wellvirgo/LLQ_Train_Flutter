@@ -12,6 +12,8 @@ class SearchComponentReq {
   String? endEffectiveDateFrom;
   String? endEffectiveDateTo;
   String? searchTech;
+  int? page;
+  int? size;
 
   SearchComponentReq({
     this.componentCode,
@@ -27,6 +29,8 @@ class SearchComponentReq {
     this.endEffectiveDateFrom,
     this.endEffectiveDateTo,
     this.searchTech,
+    this.page,
+    this.size,
   });
 
   SearchComponentReq.initialize() {
@@ -43,6 +47,8 @@ class SearchComponentReq {
     endEffectiveDateFrom = null;
     endEffectiveDateTo = null;
     searchTech = null;
+    page = null;
+    size = null;
   }
 
   Map<String, dynamic> toJson() {
@@ -59,6 +65,8 @@ class SearchComponentReq {
       'effectiveDateTo': effectiveDateTo,
       'endEffectiveDateFrom': endEffectiveDateFrom,
       'endEffectiveDateTo': endEffectiveDateTo,
+      'page': page,
+      'size': size,
       'searchTech': searchTech,
     };
   }

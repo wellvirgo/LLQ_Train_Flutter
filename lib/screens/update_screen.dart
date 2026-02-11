@@ -111,7 +111,6 @@ class _UpdateScreenState extends State<UpdateScreen> {
   }
 
   void enableAutoValidate() {
-    log(_autovalidateMode.toString());
     if (_autovalidateMode == AutovalidateMode.disabled) {
       setState(() {
         _autovalidateMode = AutovalidateMode.onUserInteraction;
@@ -137,7 +136,6 @@ class _UpdateScreenState extends State<UpdateScreen> {
   }
 
   String? validateDate(String? value) {
-    log('value: $value');
     final date = DateTime.tryParse(value ?? '');
     if (date != null) {
       if (date.isBefore(DateUtils.dateOnly(DateTime.now()))) {
@@ -322,36 +320,38 @@ class _UpdateScreenState extends State<UpdateScreen> {
                                   children: [
                                     Expanded(
                                       child: TextFormField(
-                                        autovalidateMode:
-                                            AutovalidateMode.onUserInteraction,
+                                        autovalidateMode: _autovalidateMode,
                                         controller: _effectiveDateController,
                                         decoration: InputDecoration(
                                           labelText: 'Effective Date',
                                           border: OutlineInputBorder(),
                                         ),
-                                        onTap: () => _selectDate(
-                                          context,
-                                          _effectiveDateController,
-                                        ),
-                                        onChanged: (_) => enableAutoValidate(),
+                                        onTap: () {
+                                          _selectDate(
+                                            context,
+                                            _effectiveDateController,
+                                          );
+                                          enableAutoValidate();
+                                        },
                                         validator: (value) =>
                                             validateDate(value),
                                       ),
                                     ),
                                     Expanded(
                                       child: TextFormField(
-                                        autovalidateMode:
-                                            AutovalidateMode.onUserInteraction,
+                                        autovalidateMode: _autovalidateMode,
                                         controller: _endEffectiveDateController,
                                         decoration: InputDecoration(
                                           labelText: 'End Effective Date',
                                           border: OutlineInputBorder(),
                                         ),
-                                        onTap: () => _selectDate(
-                                          context,
-                                          _endEffectiveDateController,
-                                        ),
-                                        onChanged: (_) => enableAutoValidate(),
+                                        onTap: () {
+                                          _selectDate(
+                                            context,
+                                            _endEffectiveDateController,
+                                          );
+                                          enableAutoValidate();
+                                        },
                                         validator: (value) {
                                           String? pastDateError = validateDate(
                                             value,

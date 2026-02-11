@@ -17,6 +17,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   late TextEditingController _usernameController;
   late TextEditingController _passwordController;
+  bool _isPasswordVisible = true;
 
   @override
   void initState() {
@@ -56,7 +57,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 CusTextField(
                   controller: _passwordController,
                   labelText: 'Password',
-                  obscureText: true,
+                  obscureText: _isPasswordVisible,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
                 ),
                 Stack(
                   children: [

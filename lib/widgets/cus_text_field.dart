@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 class CusTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String? labelText;
+  final IconButton? suffixIcon;
   final bool obscureText;
 
   const CusTextField({
     super.key,
     this.controller,
     this.labelText,
+    this.suffixIcon,
     this.obscureText = false,
   });
   @override
@@ -20,6 +22,7 @@ class CusTextField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: labelText,
           border: const OutlineInputBorder(),
+          suffixIcon: suffixIcon,
         ),
         obscureText: obscureText,
       ),

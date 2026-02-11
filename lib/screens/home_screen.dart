@@ -1,3 +1,4 @@
+import 'package:data_table_2/data_table_2.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -10,34 +11,46 @@ import 'package:to_do_app/providers/update_provider.dart';
 import 'package:to_do_app/widgets/cus_text_field.dart';
 import 'package:to_do_app/widgets/custom_button.dart';
 import 'package:to_do_app/widgets/primary_title.dart';
+import 'package:to_do_app/widgets/table_header.dart';
 
 class ComponentDatasource extends DataTableSource {
   List<Component> _components;
+  int _totalElements;
+  int _size;
   final Function(int id) onUpdate;
   final Function(int id) onDelete;
 
-  ComponentDatasource(this._components, this.onUpdate, this.onDelete);
+  ComponentDatasource(
+    this._components,
+    this._totalElements,
+    this._size,
+    this.onUpdate,
+    this.onDelete,
+  );
 
-  void updateData(List<Component> newComponents) {
+  void updateData(
+    List<Component> newComponents,
+    int totalElements,
+    int pageSize,
+  ) {
     _components = newComponents;
+    _totalElements = totalElements;
+    _size = pageSize;
     notifyListeners();
   }
 
   @override
   DataRow? getRow(int index) {
-    if (index > _components.length) return null;
-    final component = _components[index];
+    if (index >= _totalElements) return null;
+
+    int localIndex = index % _size;
+
+    if (localIndex >= _components.length) return null;
+
+    final component = _components[localIndex];
 
     return DataRow(
       cells: [
-        DataCell(Text(component.componentCode)),
-        DataCell(Text(component.componentName ?? 'N/A')),
-        DataCell(Text(component.messageType?.description ?? 'N/A')),
-        DataCell(Text(component.connectionMethod ?? 'N/A')),
-        DataCell(Text(component.checkToken ?? 'N/A')),
-        DataCell(Text(component.status?.label ?? 'N/A')),
-        DataCell(Text(component.effectiveDate ?? 'N/A')),
-        DataCell(Text(component.endEffectiveDate ?? 'N/A')),
         DataCell(
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -53,6 +66,14 @@ class ComponentDatasource extends DataTableSource {
             ],
           ),
         ),
+        DataCell(Text(component.componentCode)),
+        DataCell(Text(component.componentName ?? 'N/A')),
+        DataCell(Text(component.messageType?.description ?? 'N/A')),
+        DataCell(Text(component.connectionMethod ?? 'N/A')),
+        DataCell(Text(component.checkToken ?? 'N/A')),
+        DataCell(Text(component.status?.label ?? 'N/A')),
+        DataCell(Text(component.effectiveDate ?? 'N/A')),
+        DataCell(Text(component.endEffectiveDate ?? 'N/A')),
       ],
     );
   }
@@ -61,7 +82,7 @@ class ComponentDatasource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => _components.length;
+  int get rowCount => _totalElements;
 
   @override
   int get selectedRowCount => 0;
@@ -75,6 +96,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final PaginatorController _paginatorController = PaginatorController();
   late ComponentDatasource _dataSource;
   late final SearchComponentReq _searchPayload;
   late final String _authToken;
@@ -147,14 +169,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _codeController.dispose();
+    _nameController.dispose();
+    _statusController.dispose();
+    _paginatorController.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
-    _dataSource = ComponentDatasource([], handleUpdate, handleDelete);
+    final homeProvider = context.read<HomeProvider>();
+    _dataSource = ComponentDatasource(
+      [],
+      homeProvider.totalElements,
+      homeProvider.size,
+      handleUpdate,
+      handleDelete,
+    );
     _searchPayload = SearchComponentReq.initialize();
     _authToken = context.read<LoginProvider>().accessToken ?? '';
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<HomeProvider>().loadComponents(_authToken, _searchPayload);
+      homeProvider.loadComponents(_authToken, _searchPayload);
       context.read<UpdateProvider>().loadComponentStatus(_authToken);
     });
   }
@@ -273,34 +311,70 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: Consumer<HomeProvider>(
                 builder: (context, provider, child) {
-                  _dataSource.updateData(provider.components);
+                  _dataSource.updateData(
+                    provider.components,
+                    provider.totalElements,
+                    provider.size,
+                  );
                   return Stack(
                     fit: StackFit.expand,
                     children: [
-                      SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: SizedBox(
-                            width: 2000,
-                            child: PaginatedDataTable(
-                              header: const Text('Components List'),
-                              columns: const [
-                                DataColumn(label: Text('Component Code')),
-                                DataColumn(label: Text('Component Name')),
-                                DataColumn(label: Text('Message Type')),
-                                DataColumn(label: Text('Connection Method')),
-                                DataColumn(label: Text('Check Token')),
-                                DataColumn(label: Text('Status')),
-                                DataColumn(label: Text('Effective Date')),
-                                DataColumn(label: Text('End Effective Date')),
-                                DataColumn(label: Text('Actions')),
-                              ],
-                              source: _dataSource,
-                              rowsPerPage: 10,
-                            ),
+                      PaginatedDataTable2(
+                        renderEmptyRowsInTheEnd: false,
+                        fixedLeftColumns: 2,
+                        fixedTopRows: 1,
+                        minWidth: 2000,
+                        controller: _paginatorController,
+                        header: const Text('Components List'),
+                        columns: const [
+                          DataColumn2(
+                            label: TableHeader(content: 'Actions'),
+                            fixedWidth: 120,
                           ),
-                        ),
+                          DataColumn2(
+                            label: TableHeader(content: 'Component Code'),
+                          ),
+                          DataColumn2(
+                            label: TableHeader(content: 'Component Name'),
+                          ),
+                          DataColumn2(
+                            label: TableHeader(content: 'Message Type'),
+                          ),
+                          DataColumn2(
+                            label: TableHeader(content: 'Connection Method'),
+                          ),
+                          DataColumn2(
+                            label: TableHeader(content: 'Check Token'),
+                          ),
+                          DataColumn2(label: TableHeader(content: 'Status')),
+                          DataColumn2(
+                            label: TableHeader(content: 'Effective Date'),
+                          ),
+                          DataColumn2(
+                            label: TableHeader(content: 'End Effective Date'),
+                          ),
+                        ],
+                        source: _dataSource,
+                        rowsPerPage: context.watch<HomeProvider>().size,
+                        availableRowsPerPage: const [10, 20, 30],
+                        onPageChanged: (value) {
+                          final newPage = (value ~/ provider.size) + 1;
+                          provider.loadComponents(
+                            _authToken,
+                            _searchPayload,
+                            newPage: newPage,
+                          );
+                        },
+                        onRowsPerPageChanged: (value) {
+                          if (value != null) {
+                            _paginatorController.goToFirstPage();
+                            provider.loadComponents(
+                              _authToken,
+                              _searchPayload,
+                              newSize: value,
+                            );
+                          }
+                        },
                       ),
                       if (provider.isLoading)
                         Center(
