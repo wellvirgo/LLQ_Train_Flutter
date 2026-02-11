@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -74,6 +76,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (!context.mounted) return;
                         if (loginProvider.isLoggedIn) {
                           context.go('/home');
+                        }
+                        log('Login status: ${loginProvider.isLoggedIn}');
+                        if (!loginProvider.isLoggedIn) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Login failed. Please try again.'),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(16),
+                            ),
+                          );
                         }
                       },
                     ),
