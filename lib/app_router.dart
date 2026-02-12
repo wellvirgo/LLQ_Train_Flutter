@@ -21,13 +21,13 @@ class AppRouter {
             loginProvider.isLoggedIn ? null : '/login',
       ),
       GoRoute(
-        path: '/create',
+        path: '/component/create',
         builder: (context, state) => const CreationScreen(),
         redirect: (context, state) =>
             loginProvider.isLoggedIn ? null : '/login',
       ),
       GoRoute(
-        path: '/edit/:id',
+        path: '/component/edit/:id',
         builder: (context, state) {
           final String? idString = state.pathParameters['id'];
           final int id = int.tryParse(idString ?? '') ?? 0;

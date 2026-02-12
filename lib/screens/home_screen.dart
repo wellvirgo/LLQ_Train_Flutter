@@ -17,6 +17,7 @@ class ComponentDatasource extends DataTableSource {
   List<Component> _components;
   int _totalElements;
   int _size;
+  final Function(int id) onTap;
   final Function(int id) onUpdate;
   final Function(int id) onDelete;
 
@@ -24,6 +25,7 @@ class ComponentDatasource extends DataTableSource {
     this._components,
     this._totalElements,
     this._size,
+    this.onTap,
     this.onUpdate,
     this.onDelete,
   );
@@ -49,7 +51,10 @@ class ComponentDatasource extends DataTableSource {
 
     final component = _components[localIndex];
 
-    return DataRow(
+    return DataRow2(
+      onTap: () async {
+        await onTap(component.id);
+      },
       cells: [
         DataCell(
           Row(
@@ -106,8 +111,70 @@ class _HomeScreenState extends State<HomeScreen> {
   final SingleValueDropDownController _statusController =
       SingleValueDropDownController();
 
+  void handleTap(int id) {
+    context.read<UpdateProvider>().loadComponent(_authToken, id);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+              maxWidth: MediaQuery.of(context).size.width * 0.5,
+              minWidth: 300,
+              minHeight: 200,
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              spacing: 20,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    text: 'Component Details',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Consumer<UpdateProvider>(
+                    builder: (context, provider, child) {
+                      final component = provider.detailComponent;
+                      if (provider.isLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      return Text(
+                        'Component ID: ${component?.id ?? 'N/A'}\n'
+                        'Component Code: ${component?.componentCode ?? 'N/A'}\n'
+                        'Component Name: ${component?.componentName ?? 'N/A'}\n'
+                        'Message Type: ${component?.messageType?.description ?? 'N/A'}\n'
+                        'Connection Method: ${component?.connectionMethod ?? 'N/A'}\n'
+                        'Check Token: ${component?.checkToken ?? 'N/A'}\n'
+                        'Status: ${component?.status?.label ?? 'N/A'}\n'
+                        'Effective Date: ${component?.effectiveDate ?? 'N/A'}\n'
+                        'End Effective Date: ${component?.endEffectiveDate ?? 'N/A'}',
+                        style: const TextStyle(fontSize: 16, wordSpacing: 1.25),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void handleUpdate(int id) {
-    context.go('/edit/$id');
+    context.go('/component/edit/$id');
   }
 
   Future<void> handleDelete(int id) async {
@@ -185,6 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
       [],
       homeProvider.totalElements,
       homeProvider.size,
+      handleTap,
       handleUpdate,
       handleDelete,
     );
@@ -226,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                       onPressed: () {
-                        context.go('/create');
+                        context.go('/component/create');
                       },
                     ),
                     CustomButton(
