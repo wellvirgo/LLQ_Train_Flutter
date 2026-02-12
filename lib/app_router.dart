@@ -14,10 +14,17 @@ class AppRouter {
     routes: [
       GoRoute(path: '/', redirect: (context, state) => '/login'),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+      GoRoute(
+        path: '/home',
+        builder: (context, state) => const HomeScreen(),
+        redirect: (context, state) =>
+            loginProvider.isLoggedIn ? null : '/login',
+      ),
       GoRoute(
         path: '/create',
         builder: (context, state) => const CreationScreen(),
+        redirect: (context, state) =>
+            loginProvider.isLoggedIn ? null : '/login',
       ),
       GoRoute(
         path: '/edit/:id',
@@ -26,6 +33,8 @@ class AppRouter {
           final int id = int.tryParse(idString ?? '') ?? 0;
           return UpdateScreen(componentId: id);
         },
+        redirect: (context, state) =>
+            loginProvider.isLoggedIn ? null : '/login',
       ),
     ],
   );
