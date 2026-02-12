@@ -192,6 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _authToken = context.read<LoginProvider>().accessToken ?? '';
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      homeProvider.goToFirstPage();
       homeProvider.loadComponents(_authToken, _searchPayload);
       context.read<UpdateProvider>().loadComponentStatus(_authToken);
     });

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -450,14 +448,15 @@ class _UpdateScreenState extends State<UpdateScreen> {
                                       ),
                                       onPressed: () {
                                         if (_formKey.currentState!.validate()) {
+                                          final updateProvider = context
+                                              .read<UpdateProvider>();
                                           final authToken =
                                               context
                                                   .read<LoginProvider>()
                                                   .accessToken ??
                                               '';
                                           final payload = buildPayLoad();
-                                          context
-                                              .read<UpdateProvider>()
+                                          updateProvider
                                               .updateComponent(
                                                 authToken,
                                                 widget.componentId,
@@ -484,34 +483,35 @@ class _UpdateScreenState extends State<UpdateScreen> {
                                                       ),
                                                     ),
                                                   );
-                                                  await context
-                                                      .read<UpdateProvider>()
+                                                  await updateProvider
                                                       .loadComponent(
                                                         authToken,
                                                         widget.componentId,
                                                       );
                                                   setInitialData(
-                                                    context
-                                                        .read<UpdateProvider>()
+                                                    updateProvider
                                                         .detailComponent!,
                                                   );
                                                 } else {
-                                                  ScaffoldMessenger.of(
-                                                    context,
-                                                  ).showSnackBar(
-                                                    SnackBar(
-                                                      content: Text(
-                                                        'Failed to update component',
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          'Failed to update component',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                        behavior:
+                                                            SnackBarBehavior
+                                                                .floating,
+                                                        margin: EdgeInsets.all(
+                                                          10,
+                                                        ),
                                                       ),
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                      behavior: SnackBarBehavior
-                                                          .floating,
-                                                      margin: EdgeInsets.all(
-                                                        10,
-                                                      ),
-                                                    ),
-                                                  );
+                                                    );
+                                                  }
                                                 }
                                               });
                                         } else {

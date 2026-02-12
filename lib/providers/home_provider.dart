@@ -71,4 +71,8 @@ class HomeProvider extends ChangeNotifier {
     }
     return false;
   }
+
+  void goToFirstPage() {
+    _page = 1;
+  }
 }
